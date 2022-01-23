@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
@@ -11,17 +12,33 @@ public class MainManager : MonoBehaviour
     public Rigidbody Ball;
 
     public Text ScoreText;
+    public Text highScoreText;
     public GameObject GameOverText;
     
     private bool m_Started = false;
-    private int m_Points;
+    [SerializeField] private int m_Points;
     
     private bool m_GameOver = false;
+    [SerializeField] private int highScore = 0;
+    [SerializeField] private string userName = "NONAME";
 
     
     // Start is called before the first frame update
     void Start()
     {
+        string highUser = PlayerPrefs.GetString("HighScoreName", "");
+        highScore = PlayerPrefs.GetInt("HighScore", 0);
+        MenuController menuController = GameObject.FindObjectOfType<MenuController>();
+        if (menuController != null)
+        {
+            userName = menuController.userName;
+        }
+        highScoreText.text = "Best Score : " + highUser + " : " + highScore;
+        if (highUser == "")
+        {
+            highScoreText.gameObject.SetActive(false);
+        }
+        
         const float step = 0.6f;
         int perLine = Mathf.FloorToInt(4.0f / step);
         
@@ -72,5 +89,13 @@ public class MainManager : MonoBehaviour
     {
         m_GameOver = true;
         GameOverText.SetActive(true);
+
+        if (m_Points > highScore)
+        {
+            PlayerPrefs.SetInt("HighScore", m_Points);
+            PlayerPrefs.SetString("HighScoreName", userName);
+            highScoreText.gameObject.SetActive(true);
+            highScoreText.text = "Best Score : " + userName + " : " + m_Points;
+        }
     }
 }
